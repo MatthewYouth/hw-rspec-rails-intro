@@ -5,10 +5,11 @@ class Movie < ApplicationRecord
     terms = search_terms.is_a?(String) ? { title: search_terms } : search_terms.to_h.symbolize_keys
     return [] if terms[:title].blank?
 
-    query = { api_key: api_key, query: terms[:title] }
+    query = { api_key: api_key.to_s, query: terms[:title] }
     query[:year] = terms[:release_year] if terms[:release_year].present?
     query[:language] = terms[:language] if terms[:language].present? && terms[:language] != 'all'
-    response = Faraday.get('https://api.themoviedb.org/3/search/movie', query) do |request|
+    url = "https://api.themoviedb.org/3/search/movie?#{URI.encode_www_form(query)}"
+    response = Faraday.get(url) do |request|
       request.options.open_timeout = 5
       request.options.timeout = 10
     end
