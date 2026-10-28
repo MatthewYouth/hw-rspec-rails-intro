@@ -1,6 +1,33 @@
 class MoviesController < ApplicationController
   before_action :set_movie, only: %i[ show edit update destroy ]
 
+  def search_tmdb
+    @movies = []
+    return unless params.key?(:title) || params.key?(:search_terms) || params.key?(:commit)
+
+    title = params[:title] || params[:search_terms]
+    if title.blank?
+      flash.now[:alert] = 'Please fill in all required fields!'
+      return
+    end
+
+    search_terms = if params.key?(:search_terms) && !params.key?(:title)
+      params[:search_terms]
+    else
+      { title: title, release_year: params[:release_year], language: params[:language] }
+    end
+    @movies = Movie.find_in_tmdb(search_terms)
+    flash.now[:alert] = 'No movies found with given parameters!' if @movies.empty?
+  rescue Movie::TmdbError => error
+    flash.now[:alert] = error.message
+  end
+
+  def add_movie
+    movie = Movie.create!(movie_params)
+    redirect_to search_tmdb_path,
+      notice: "#{movie.title} was successfully added to RottenPotatoes."
+  end
+
   # GET /movies or /movies.json
   def index
     @all_ratings = Movie.all_ratings

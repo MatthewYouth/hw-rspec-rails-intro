@@ -30,3 +30,27 @@ The assignment itself is in the [instructions](instructions/README.md) folder of
 6. [Part 4: TDD for the Model](instructions/06-Part-4--TDD-for-the-Model.md)
 7. [Part 5: Implementing find_in_tmdb, and Stubbing the Internet](instructions/07-Part-5--Implementing-find-in-tmdb--and-Stubbing-the-Internet.md)
 8. [Deploying and submitting](instructions/08-Submission-Instructions.md)
+
+## Running the completed TMDb feature
+
+Use Ruby 3.3.8 or newer, then run:
+
+```sh
+bundle config set without 'production'
+bundle install
+bin/rails db:prepare
+bundle exec rspec
+```
+
+Set `TMDB_API_KEY` to your TMDb API v3 key in your shell or hosting provider's
+Environment settings. No real key is required for tests: WebMock supplies the
+responses and blocks external requests. Start the app with `bin/rails server`
+and follow **Search TMDb** from the movie list. The title is required; the year
+is optional. **English Only** filters results to English original-language
+movies. Searches return unsaved movies; **Add movie** saves the selected result
+with the assignment's default rating of R.
+
+For automatic test runs, use `bundle exec guard`. Before submitting, follow
+[instructions/08-Submission-Instructions.md](instructions/08-Submission-Instructions.md)
+to deploy, configure `TMDB_API_KEY`, and fill `rottenpotatoes-url.txt` with the
+actual deployed URL.
