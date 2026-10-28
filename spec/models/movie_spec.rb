@@ -48,6 +48,25 @@ RSpec.describe Movie, type: :model do
       expect(described_class.find_in_tmdb(terms).size).to eq(2)
     end
 
+
+    it 'passes the complete encoded URL as a single Faraday argument' do
+      url = "#{endpoint}?api_key=test-key&query=This+Life+%2B+10&year=2007"
+      response = instance_double(Faraday::Response, status: 200, success?: true, body: body)
+      expect(Faraday).to receive(:get).with(url).and_return(response)
+      expect(described_class.find_in_tmdb(terms, 'test-key').map(&:title)).
+        to eq(['This Life + 10', 'Another Life'])
+    end
+
+    it 'can replay recorded HTTP responses when no API key is configured' do
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with('TMDB_API_KEY').and_return(nil)
+      url = "#{endpoint}?api_key=&query=This+Life+%2B+10&year=2007"
+      request = stub_request(:get, url).to_return(status: 200, body: body)
+      expect(described_class.find_in_tmdb(terms).map(&:title)).
+        to eq(['This Life + 10', 'Another Life'])
+      expect(request).to have_been_requested.once
+    end
+
     it 'does not contact TMDb for a blank title' do
       expect(Faraday).not_to receive(:get)
       expect(described_class.find_in_tmdb({ title: '  ' }, 'test-key')).to eq([])
