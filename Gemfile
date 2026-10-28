@@ -8,6 +8,7 @@ gem "rails", "~> 7.1.5"
 # Rails 7.1 cannot encode JSON with json 3.x (it passes the removed
 # quirks_mode option), and gems such as faraday pull in the latest json.
 gem "json", "~> 2.10"
+gem "faraday", "~> 2.12"
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
@@ -64,6 +65,12 @@ group :development do
 
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
+end
+
+group :test do
+  gem "rails-controller-testing"
+  gem "guard-rspec"
+  gem "webmock"
 end
 
 # These gems are used in production environments, such as Heroku
