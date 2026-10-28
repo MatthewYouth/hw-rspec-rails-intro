@@ -67,6 +67,27 @@ RSpec.describe Movie, type: :model do
       expect(request).to have_been_requested.once
     end
 
+
+    it 'accepts recorded responses with body and status but no success helper' do
+      response = Struct.new(:status, :body).new(200, body)
+      allow(Faraday).to receive(:get).and_return(response)
+      expect(described_class.find_in_tmdb(terms, 'test-key').map(&:title)).
+        to eq(['This Life + 10', 'Another Life'])
+    end
+
+    it 'parses body-only recorded responses without requiring HTTP metadata' do
+      response = Struct.new(:body).new(body)
+      allow(Faraday).to receive(:get).and_return(response)
+      expect(described_class.find_in_tmdb(terms, 'test-key').size).to eq(2)
+    end
+
+    it 'rejects an API authentication error in a body-only response' do
+      response = Struct.new(:body).new('{"success":false,"status_code":7}')
+      allow(Faraday).to receive(:get).and_return(response)
+      expect { described_class.find_in_tmdb(terms, 'test-key') }.
+        to raise_error(Movie::TmdbError, /Invalid TMDb API key/)
+    end
+
     it 'does not contact TMDb for a blank title' do
       expect(Faraday).not_to receive(:get)
       expect(described_class.find_in_tmdb({ title: '  ' }, 'test-key')).to eq([])

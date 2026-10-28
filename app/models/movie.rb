@@ -13,12 +13,19 @@ class Movie < ApplicationRecord
       request.options.open_timeout = 5
       request.options.timeout = 10
     end
-    if response.status == 401
+    # Replay adapters may expose body/status without Faraday's success? helper.
+    status = response.status if response.respond_to?(:status)
+    if status.to_i == 401
       raise TmdbError, 'Invalid TMDb API key. Please check TMDB_API_KEY.'
     end
-    raise TmdbError, 'TMDb is unavailable. Please try again later.' unless response.success?
+    if status && !(200..299).cover?(status.to_i)
+      raise TmdbError, 'TMDb is unavailable. Please try again later.'
+    end
 
     data = JSON.parse(response.body)
+    if data.is_a?(Hash) && data['status_code'] == 7
+      raise TmdbError, 'Invalid TMDb API key. Please check TMDB_API_KEY.'
+    end
     unless data.is_a?(Hash) && data['results'].is_a?(Array) && data['results'].all? { |movie| movie.is_a?(Hash) }
       raise TmdbError, 'TMDb is unavailable. Please try again later.'
     end
