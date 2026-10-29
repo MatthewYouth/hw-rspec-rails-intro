@@ -60,7 +60,7 @@ RSpec.describe Movie, type: :model do
     it 'can replay recorded HTTP responses when no API key is configured' do
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with('TMDB_API_KEY').and_return(nil)
-      url = "#{endpoint}?api_key=&query=This+Life+%2B+10&year=2007"
+      url = "#{endpoint}?api_key=temp-key&query=This+Life+%2B+10&year=2007"
       request = stub_request(:get, url).to_return(status: 200, body: body)
       expect(described_class.find_in_tmdb(terms).map(&:title)).
         to eq(['This Life + 10', 'Another Life'])
