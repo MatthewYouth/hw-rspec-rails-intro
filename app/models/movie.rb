@@ -1,7 +1,7 @@
 class Movie < ApplicationRecord
   class TmdbError < StandardError; end
 
-  def self.find_in_tmdb(search_terms, api_key = ENV['TMDB_API_KEY'])
+  def self.find_in_tmdb(search_terms, api_key = ENV['TMDB_API_KEY'] || 'temp-key')
     terms = search_terms.is_a?(String) ? { title: search_terms } : search_terms.to_h.symbolize_keys
     return [] if terms[:title].blank?
 
